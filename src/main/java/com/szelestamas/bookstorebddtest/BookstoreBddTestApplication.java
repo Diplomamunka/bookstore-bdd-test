@@ -1,13 +1,26 @@
 package com.szelestamas.bookstorebddtest;
 
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
+import io.cucumber.core.cli.Main;
 
-@SpringBootApplication
 public class BookstoreBddTestApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(BookstoreBddTestApplication.class, args);
+        Main.main(concatArgs(new String[] {
+                "classpath:featuretest",
+                "--glue", "com.szelestamas.bookstorebddtest",
+                "--plugin",  "pretty",
+                "--plugin", "html:build/reports/cucumber.html",
+                "--plugin", "json:build/reports/cucumber.json",
+                "--snippets", "camelcase",
+        }, args));
     }
 
+    private static String[] concatArgs(final String[] a, final String[] b) {
+        final int aLen = a.length;
+        final int bLen = b.length;
+        final String[] c = new String[aLen + bLen];
+        System.arraycopy(a, 0, c, 0, aLen);
+        System.arraycopy(b, 0, c, aLen, bLen);
+        return c;
+    }
 }
