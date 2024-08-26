@@ -1,33 +1,27 @@
-package com.szelestamas.bookstorebddtest.api;
+package com.szelestamas.bookstorebddtest.api.book;
 
-import io.cucumber.java.DataTableType;
+import com.szelestamas.bookstorebddtest.api.author.AuthorResource;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDate;
-import java.util.Map;
+import java.util.List;
 
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class Book {
+public class BookResource {
     private long id;
     private String title;
     private int price;
-    private Category category;
+    private String category;
     private String shortDescription;
     private int discount;
+    private List<AuthorResource> authors;
     private boolean available;
     private LocalDate releaseDate;
     private String icon;
-
-    @DataTableType
-    public Book bookEntry(Map<String, String> entry) {
-        return new Book(
-
-        );
-    }
 }
