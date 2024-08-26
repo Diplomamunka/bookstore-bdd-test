@@ -12,6 +12,8 @@ import java.util.stream.Collectors;
 
 @Component
 public class RunContext {
+    public static final String FEATURE_TEST_POSTFIX = "-FT-";
+
     @Getter
     private final String runId;
     @Getter
@@ -75,5 +77,27 @@ public class RunContext {
     public void resetCreatedResources() {
         createdResources.clear();
         lastCreatedResourceNames.clear();
+    }
+
+    public String identifierWithRunId(String id) {
+        if (id == null) {
+            return null;
+        }
+        return id + runIdPostfix();
+    }
+
+    public String identifierWithoutRunId(String id) {
+        if (id == null) {
+            return null;
+        }
+        return id.replace(runIdPostfix(), "");
+    }
+
+    private String runIdPostfix() {
+        return "-" + runId + FEATURE_TEST_POSTFIX;
+    }
+
+    public boolean isAFeatureTestIdentifier(String id) {
+        return id != null && id.endsWith(FEATURE_TEST_POSTFIX);
     }
 }

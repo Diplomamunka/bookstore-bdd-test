@@ -1,39 +1,32 @@
 package com.szelestamas.bookstorebddtest.api;
 
+import com.szelestamas.bookstorebddtest.api.author.AuthorResource;
+import com.szelestamas.bookstorebddtest.api.book.BookResource;
+import com.szelestamas.bookstorebddtest.api.category.CategoryResource;
+import io.cucumber.java.mk_latn.No;
+import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
 
 @RequiredArgsConstructor
-@Component
-public class ApiManagementClient {
-    private final RestTemplate restTemplate;
-    private final ApiServiceProperties apiServiceProperties;
+public abstract class ApiManagementClient {
+    protected final RestTemplate restTemplate;
+    protected final ApiServiceProperties apiServiceProperties;
+
+    public String getApplicationUrl() {
+        return apiServiceProperties.toApplicationUrl("");
+    }
 
 
     public ResponseEntity<Void> callIndexPage() {
         return restTemplate.exchange(apiServiceProperties.toApplicationUrl(""), HttpMethod.GET, null, Void.class);
-    }
-
-    public ResponseEntity<List<Category>> getCategories() {
-        return restTemplate.exchange(apiServiceProperties.toApplicationUrl("/categories"), HttpMethod.GET, null, new ParameterizedTypeReference<List<Category>>() {});
-    }
-
-    public ResponseEntity<Category> getCategory(String id) {
-        return restTemplate.exchange(apiServiceProperties.toApplicationUrl("/categories/" + id), HttpMethod.GET, null, Category.class);
-    }
-
-    public ResponseEntity<Category> createCategory(Category category) {
-        return restTemplate.exchange(apiServiceProperties.toApplicationUrl("/categories"), HttpMethod.PUT, new HttpEntity<>(category), Category.class);
-    }
-
-    public ResponseEntity<Void> deleteCategory(String name) {
-        return restTemplate.exchange(apiServiceProperties.toApplicationUrl("/categories/" + name), HttpMethod.DELETE, null, Void.class);
     }
 }
