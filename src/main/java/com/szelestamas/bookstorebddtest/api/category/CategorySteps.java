@@ -1,5 +1,6 @@
 package com.szelestamas.bookstorebddtest.api.category;
 
+import com.szelestamas.bookstorebddtest.api.book.BookResource;
 import com.szelestamas.bookstorebddtest.core.RunContext;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
@@ -9,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 
 import java.util.List;
+import java.util.Map;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -71,5 +73,27 @@ public class CategorySteps {
         ResponseEntity<Void> response = apiManagementClient.deleteCategory(categoryResource.id());
         runContext.removeCreatedResource(name, CategoryResource.class);
         assertEquals(204, response.getStatusCode().value());
+    }
+
+    @Then("User cannot delete the category {string}")
+    public void userCannotDeleteTheCategory(String name) {
+        CategoryResource categoryResource = runContext.createdResource(CategoryResource.class, name);
+        ResponseEntity<Void> response = apiManagementClient.deleteCategory(categoryResource.id());
+        assertEquals(409, response.getStatusCode().value());
+    }
+
+    @When("User deletes all books in the category {string}")
+    public void userDeletesAllBooksInTheCategory(String name) {
+        CategoryResource categoryResource = runContext.createdResource(CategoryResource.class, name);
+        ResponseEntity<Map<String, Object>> response = apiManagementClient.deleteBooksByCategory(categoryResource.id());
+        assertEquals(204, response.getStatusCode().value());
+    }
+
+    @Then("All books deleted from the category {string}")
+    public void allBooksDeletedFromTheCategory(String name) {
+        CategoryResource categoryResource = runContext.createdResource(CategoryResource.class, name);
+        ResponseEntity<List<BookResource>> response = apiManagementClient.getBooksByCategory(categoryResource.id());
+        assertEquals(200, response.getStatusCode().value());
+        assertTrue(response.getBody().isEmpty());
     }
 }

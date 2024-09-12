@@ -21,10 +21,6 @@ Feature: Author testing
       | Gárdonyi Géza    |
       | J. R. R. Tolkien |
 
-  Scenario: Access the recorded author
-    Given User records the author 'J. K. Rowling'
-    Then User can read the previously recorded author 'J. K. Rowling'
-
   Scenario: Update the recorded author's name
     Given User records the author 'J. K. Rolwing'
     When User updates the previously recorded author's name from 'J. K. Rolwing' to 'J. K. Rowling'
@@ -33,3 +29,4 @@ Feature: Author testing
   Scenario: Delete an author
     Given User records the author 'J. K. Rowling'
     When User deletes the recorded author 'J. K. Rowling'
+    Then User cannot read the author 'J. K. Rowling'

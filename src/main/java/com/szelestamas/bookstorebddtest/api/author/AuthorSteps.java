@@ -1,5 +1,6 @@
 package com.szelestamas.bookstorebddtest.api.author;
 
+import com.szelestamas.bookstorebddtest.api.book.BookResource;
 import com.szelestamas.bookstorebddtest.core.RunContext;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
@@ -7,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 
 import java.util.List;
+import java.util.Map;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -79,8 +81,37 @@ public class AuthorSteps {
     public void userDeletesTheRecordedAuthor(String name) {
         AuthorResource author = runContext.createdResource(AuthorResource.class, name);
         ResponseEntity<Void> response = apiManagementClient.deleteAuthor(author.id());
-        runContext.removeCreatedResource(name, AuthorResource.class);
         assertEquals(204, response.getStatusCode().value());
 
+    }
+
+    @Then("User cannot read the author {string}")
+    public void userCannotReadTheAuthor(String name) {
+        AuthorResource author = runContext.createdResource(AuthorResource.class, name);
+        ResponseEntity<List<AuthorResource>> response = apiManagementClient.getAuthors();
+        assertEquals(200, response.getStatusCode().value());
+        assertFalse(response.getBody().contains(author));
+    }
+
+    @When("User cannot delete the author {string}")
+    public void userCannotDeleteTheAuthor(String name) {
+        AuthorResource author = runContext.createdResource(AuthorResource.class, name);
+        ResponseEntity<Void> response = apiManagementClient.deleteAuthor(author.id());
+        assertEquals(409, response.getStatusCode().value());
+    }
+
+    @When("User deletes all books from the author {string}")
+    public void userDeletesAllBooksFromTheAuthor(String name) {
+        AuthorResource author = runContext.createdResource(AuthorResource.class, name);
+        ResponseEntity<Map<String, Object>> response = apiManagementClient.deleteBooksByAuthor(author.id());
+        assertEquals(204, response.getStatusCode().value());
+    }
+
+    @Then("All books deleted from the author {string}")
+    public void allBooksDeletedFromTheAuthor(String name) {
+        AuthorResource author = runContext.createdResource(AuthorResource.class, name);
+        ResponseEntity<List<BookResource>> response = apiManagementClient.getBooksByAuthor(author.id());
+        assertEquals(200, response.getStatusCode().value());
+        assertTrue(response.getBody().isEmpty());
     }
 }

@@ -2,6 +2,7 @@ package com.szelestamas.bookstorebddtest.api.author;
 
 import com.szelestamas.bookstorebddtest.api.ApiManagementClient;
 import com.szelestamas.bookstorebddtest.api.ApiServiceProperties;
+import com.szelestamas.bookstorebddtest.api.book.BookResource;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
@@ -11,6 +12,7 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
+import java.util.Map;
 
 @Component
 public class AuthorApiManagementClient extends ApiManagementClient {
@@ -27,8 +29,7 @@ public class AuthorApiManagementClient extends ApiManagementClient {
     }
 
     public ResponseEntity<List<AuthorResource>> getAuthors() {
-        return restTemplate.exchange(apiServiceProperties.toApplicationUrl("/authors"), HttpMethod.GET, null, new ParameterizedTypeReference<>() {
-        });
+        return restTemplate.exchange(apiServiceProperties.toApplicationUrl("/authors"), HttpMethod.GET, null, new ParameterizedTypeReference<>() {});
     }
 
     public ResponseEntity<Void> deleteAuthor(long id) {
@@ -45,5 +46,13 @@ public class AuthorApiManagementClient extends ApiManagementClient {
 
     public ResponseEntity<AuthorResource> updateAuthor(long id, AuthorDto author) {
         return restTemplate.exchange(apiServiceProperties.toApplicationUrl("/authors/" + id), HttpMethod.PUT, new HttpEntity<>(author), AuthorResource.class);
+    }
+
+    public ResponseEntity<List<BookResource>> getBooksByAuthor(long id) {
+        return restTemplate.exchange(apiServiceProperties.toApplicationUrl("/authors/" + id + "/books"), HttpMethod.GET, null, new ParameterizedTypeReference<>() {});
+    }
+
+    public ResponseEntity<Map<String, Object>> deleteBooksByAuthor(long id) {
+        return restTemplate.exchange(apiServiceProperties.toApplicationUrl("/authors/" + id + "/books"), HttpMethod.DELETE, null, new ParameterizedTypeReference<>() {});
     }
 }
