@@ -20,6 +20,21 @@ Feature: Book testing
     Then User can read the previously recorded book 'Egri csillagok'
     Then User can read the previously recorded book 'Egri csillagok' in the books of 'Gárdonyi Géza'
 
+  Scenario: :User can record a book with multiple authors
+    Given User records the author 'Beatriz Williams'
+    When User records the following book:
+      | title           | price | category | discount | authors                                      | available |
+      | The Glass Ocean | 3000  | novel    | 0        | Lauren Willig, Karen White, Beatriz Williams | true      |
+    Then User can read the previously recorded book 'The Glass Ocean'
+    Then User can read the following authors:
+      | Beatriz Williams |
+      | Lauren Willig    |
+      | Karen White      |
+    Then User can read the previously recorded book 'The Glass Ocean' in the books of
+      | Beatriz Williams |
+      | Lauren Willig    |
+      | Karen White      |
+
   Scenario: User uploads an image of the previously recorded book
     Given User records the following book:
       | title          | price | category | discount | authors       | available |
@@ -45,6 +60,13 @@ Feature: Book testing
     When User adds the following description to book 'Egri csillagok': 'A novel about the topic how the turkish empire wanted to conquer a castle in Hungary.'
     Then User can read the previously modified book 'Egri csillagok'
 
+  Scenario: User updates the previously recorded book's category
+    Given User records the following book:
+      | title          | price | category | discount | authors       | available |
+      | Egri csillagok | 5000  | fantasy  | 0        | Gárdonyi Géza | true      |
+    When User changes the category of the book 'Egri csillagok' to 'novel'
+    Then User can read the previously modified book 'Egri csillagok'
+
   Scenario: Delete a book
     Given User records the following book:
       | title          | price | category | discount | authors       | available |
@@ -52,22 +74,6 @@ Feature: Book testing
     When User deletes the recorded book 'Egri csillagok'
     Then User can read the previously recorded author 'Gárdonyi Géza'
     Then User cannot read the book 'Egri csillagok'
-
-  Scenario: Cannot delete category if it has a book
-    Given User adds the category 'novella'
-    Given User records the following book:
-      | title               | price | category | discount | authors         | available |
-      | Bede Anna tartozása | 2000  | novella  | 0        | Mikszáth Kálmán | true      |
-    When User cannot delete the category 'novella'
-    Then User can read the previously recorded book 'Bede Anna tartozása'
-    Then User can read the previously created category 'novella'
-
-  Scenario: Cannot delete authors if they have a book
-    Given User records the following book:
-      | title          | price | category | discount | authors       | available |
-      | Egri csillagok | 5000  | novel    | 0        | Gárdonyi Géza | true      |
-    When User cannot delete the author 'Gárdonyi Géza'
-    Then User can read the previously recorded author 'Gárdonyi Géza'
 
   Scenario: Delete all books in a category
     Given User adds the category 'novella'
@@ -80,7 +86,7 @@ Feature: Book testing
     When User deletes all books in the category 'novella'
     Then All books deleted from the category 'novella'
 
-  Scenario: Delete all an author all books
+  Scenario: Delete an author's all books
     Given User records the author 'J. K. Rowling'
     Given User records the following book:
       | title                          | price | category | discount | authors       | available |

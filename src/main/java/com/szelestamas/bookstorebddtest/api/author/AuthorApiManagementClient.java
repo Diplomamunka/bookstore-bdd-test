@@ -45,7 +45,11 @@ public class AuthorApiManagementClient extends ApiManagementClient {
     }
 
     public ResponseEntity<AuthorResource> updateAuthor(long id, AuthorDto author) {
-        return restTemplate.exchange(apiServiceProperties.toApplicationUrl("/authors/" + id), HttpMethod.PUT, new HttpEntity<>(author), AuthorResource.class);
+        try {
+            return restTemplate.exchange(apiServiceProperties.toApplicationUrl("/authors/" + id), HttpMethod.PUT, new HttpEntity<>(author), AuthorResource.class);
+        } catch (HttpClientErrorException e) {
+            return ResponseEntity.status(e.getStatusCode()).build();
+        }
     }
 
     public ResponseEntity<List<BookResource>> getBooksByAuthor(long id) {

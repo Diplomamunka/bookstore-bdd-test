@@ -53,3 +53,12 @@ Feature: Category testing
       | adventure  |
       | fairy tale |
       | juvenile   |
+
+  Scenario: Cannot delete category if it has a book
+    Given User adds the category 'novella'
+    Given User records the following book:
+      | title               | price | category | discount | authors         | available |
+      | Bede Anna tartozása | 2000  | novella  | 0        | Mikszáth Kálmán | true      |
+    When User cannot delete the category 'novella'
+    Then User can read the previously recorded book 'Bede Anna tartozása'
+    Then User can read the previously created category 'novella'

@@ -77,6 +77,14 @@ public class AuthorSteps {
         assertEquals(name, runContext.identifierWithoutRunId(response.getBody().fullName()));
     }
 
+    @Then("User cannot update the author {string} to {string}")
+    public void userCannotUpdateTheAuthor(String before, String after) {
+        AuthorResource author = runContext.createdResource(AuthorResource.class, before);
+        AuthorDto updatedAuthor = new AuthorDto(runContext.identifierWithRunId(after));
+        ResponseEntity<AuthorResource> response = apiManagementClient.updateAuthor(author.id(), updatedAuthor);
+        assertEquals(409, response.getStatusCode().value());
+    }
+
     @When("User deletes the recorded author {string}")
     public void userDeletesTheRecordedAuthor(String name) {
         AuthorResource author = runContext.createdResource(AuthorResource.class, name);

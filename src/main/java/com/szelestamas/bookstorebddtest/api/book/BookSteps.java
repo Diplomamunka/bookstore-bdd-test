@@ -102,6 +102,7 @@ public class BookSteps {
     @When("User adds the following description to book {string}: {string}")
     public void userAddsADescriptionToBook(String title, String description) {
         BookResource book = runContext.createdResource(BookResource.class, title);
+        runContext.removeCreatedResource(title, BookResource.class);
         BookDto updatedBook = new BookDto();
         updatedBook.setTitle(book.getTitle());
         updatedBook.setDiscount(book.getDiscount());
@@ -112,6 +113,7 @@ public class BookSteps {
         updatedBook.setAuthors(book.getAuthors().stream().map(author -> new AuthorDto(author.fullName())).toList());
         updatedBook.setShortDescription(description);
         ResponseEntity<BookResource> response = apiManagementClient.updateBook(book.getId(), updatedBook);
+        runContext.addCreatedResource(title, response.getBody());
         assertEquals(200, response.getStatusCode().value());
         assertEquals(updatedBook.getTitle(), response.getBody().getTitle());
         assertEquals(updatedBook.getDiscount(), response.getBody().getDiscount());
@@ -133,8 +135,36 @@ public class BookSteps {
         assertEquals(expectedBook.getDiscount(), response.getBody().getDiscount());
         assertEquals(expectedBook.getPrice(), response.getBody().getPrice());
         assertEquals(expectedBook.isAvailable(), response.getBody().isAvailable());
+        assertEquals(expectedBook.getShortDescription(), response.getBody().getShortDescription());
+        assertEquals(expectedBook.getReleaseDate(), response.getBody().getReleaseDate());
         assertEquals(expectedBook.getCategory().name(), response.getBody().getCategory().name());
         assertThat(expectedBook.getAuthors().stream().map(AuthorResource::fullName).toList(),
+                containsInAnyOrder(response.getBody().getAuthors().stream().map(AuthorResource::fullName).toArray()));
+    }
+
+    @When("User changes the category of the book {string} to {string}")
+    public void userChangesTheCategoryOfTheBook(String title, String category) {
+        BookResource book = runContext.createdResource(BookResource.class, title);
+        runContext.removeCreatedResource(title, BookResource.class);
+        BookDto updatedBook = new BookDto();
+        updatedBook.setTitle(book.getTitle());
+        updatedBook.setDiscount(book.getDiscount());
+        updatedBook.setPrice(book.getPrice());
+        updatedBook.setAvailable(book.isAvailable());
+        updatedBook.setCategory(CategoryDto.parse(category));
+        updatedBook.setReleaseDate(book.getReleaseDate());
+        updatedBook.setAuthors(book.getAuthors().stream().map(author -> new AuthorDto(author.fullName())).toList());
+        ResponseEntity<BookResource> response = apiManagementClient.updateBook(book.getId(), updatedBook);
+        runContext.addCreatedResource(title, response.getBody());
+        assertEquals(200, response.getStatusCode().value());
+        assertEquals(updatedBook.getTitle(), response.getBody().getTitle());
+        assertEquals(updatedBook.getDiscount(), response.getBody().getDiscount());
+        assertEquals(updatedBook.getPrice(), response.getBody().getPrice());
+        assertEquals(updatedBook.isAvailable(), response.getBody().isAvailable());
+        assertEquals(updatedBook.getCategory().name(), response.getBody().getCategory().name());
+        assertEquals(updatedBook.getReleaseDate(), response.getBody().getReleaseDate());
+        assertEquals(updatedBook.getShortDescription(), response.getBody().getShortDescription());
+        assertThat(updatedBook.getAuthors().stream().map(AuthorDto::getFullName).toList(),
                 containsInAnyOrder(response.getBody().getAuthors().stream().map(AuthorResource::fullName).toArray()));
     }
 
@@ -168,5 +198,17 @@ public class BookSteps {
         Path file = Path.of(apiManagementClient.filesPath, "big_image.jpg");
         ResponseEntity<String> response = apiManagementClient.uploadImage(book.getId(), file);
         assertEquals(413, response.getStatusCode().value());
+    }
+
+    @Then("User can read the previously recorded book {string} in the books of")
+    public void userCanReadThePreviouslyRecordedBookInTheBooksOf(String title, List<String> authorNames) {
+        BookResource book = runContext.createdResource(BookResource.class, title);
+        List<AuthorResource> authors = authorNames.stream()
+                .map(authorName -> runContext.createdResource(AuthorResource.class, authorName)).toList();
+        authors.forEach(author -> {
+            ResponseEntity<List<BookResource>> response = authorApiManagementClient.getBooksByAuthor(author.id());
+            assertEquals(200, response.getStatusCode().value());
+            assertTrue(response.getBody().contains(book));
+        });
     }
 }
