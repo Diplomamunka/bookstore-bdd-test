@@ -1,6 +1,7 @@
 package com.szelestamas.bookstorebddtest.core.persona;
 
 import lombok.Getter;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 
 import java.util.HashMap;
@@ -8,6 +9,7 @@ import java.util.Map;
 
 @Getter
 @Configuration
+@ConfigurationProperties(prefix = "backend-service")
 public class PersonaProperty {
     private Map<String, Persona> personae = new HashMap<>();
 

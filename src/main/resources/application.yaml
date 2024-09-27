@@ -5,25 +5,26 @@ spring:
     location: classpath:banner.txt
 website-url: http://localhost:8080/api
 file-location: src/main/resources/images
-personae:
-  Adam:
-    type: administrator
-    description: application administrator
-    login: true
-    email: adam.admin@bookstore.com
-    password: xxxx
-  Mike:
-    type: staff
-    desription: bookstore staff member
-    login: true
-    email: mike.staff@bookstore.com
-    password: xxxx
-  Sue:
-    type: customer
-    desription: bookstore customer
-    login: true
-    email: sue.customer@bookstore.com
-    password: xxxxxx
+backend-service:
+  personae:
+    Adam:
+      type: administrator
+      description: application administrator
+      login: true
+      email: adam.admin@bookstore.com
+      password: xxxx
+    Mike:
+      type: staff
+      description: bookstore staff member
+      login: true
+      email: mike.staff@bookstore.com
+      password: xxxx
+    Sue:
+      type: customer
+      description: bookstore customer
+      login: true
+      email: sue.customer@bookstore.com
+      password: xxxxxx
 authorization:
   enabled: true
   method: BASIC
