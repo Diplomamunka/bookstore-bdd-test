@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDate;
+import java.util.HashSet;
 import java.util.List;
 
 @Getter
@@ -31,7 +32,7 @@ public class BookResource {
         if (o == null || getClass() != o.getClass()) return false;
         BookResource that = (BookResource) o;
         return id == that.id && title.equals(that.title) && price == that.price && discount == that.discount &&
-                available == that.available && (releaseDate == that.releaseDate) || releaseDate.equals(that.releaseDate) &&
-                category.equals(that.category) && authors.equals(that.authors);
+                available == that.available && ((releaseDate == that.releaseDate) || releaseDate.equals(that.releaseDate)) &&
+                category.equals(that.category) && (new HashSet<>(authors).equals(new HashSet<>(that.authors)));
     }
 }

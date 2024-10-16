@@ -9,7 +9,7 @@ import java.util.Map;
 
 @Getter
 @Configuration
-@ConfigurationProperties(prefix = "backend-service")
+@ConfigurationProperties
 public class PersonaProperty {
     private Map<String, Persona> personae = new HashMap<>();
 
@@ -17,6 +17,7 @@ public class PersonaProperty {
         Persona persona = personae.get(personaName);
         if (persona == null)
             throw new PersonaNotFoundException("Persona " + personaName + " not found");
+        persona.setName(personaName);
         return persona;
     }
 }

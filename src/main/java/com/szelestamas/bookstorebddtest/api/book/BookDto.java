@@ -12,6 +12,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
 import java.time.temporal.ChronoField;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -26,6 +27,7 @@ public class BookDto {
     private CategoryDto category;
     private String shortDescription;
     private int discount;
+    private List<String> tags;
     private List<AuthorDto> authors;
     private boolean available;
     private LocalDate releaseDate;
@@ -39,6 +41,7 @@ public class BookDto {
                     CategoryDto.parse(entry.get("category")),
                     null,
                     Integer.parseInt(entry.get("discount")),
+                    new ArrayList<>(),
                     Arrays.stream(entry.get("authors").split(", ")).map(AuthorDto::parse).toList(),
                     Boolean.parseBoolean(entry.get("available")),
                     null
@@ -50,6 +53,7 @@ public class BookDto {
                     CategoryDto.parse(entry.get("category")),
                     entry.get("short description"),
                     Integer.parseInt(entry.get("discount")),
+                    Arrays.stream(entry.get("tags").split(",")).toList(),
                     Arrays.stream(entry.get("authors").split(", ")).map(AuthorDto::parse).toList(),
                     Boolean.parseBoolean(entry.get("available")),
                     LocalDate.parse(entry.get("release date"), new DateTimeFormatterBuilder()

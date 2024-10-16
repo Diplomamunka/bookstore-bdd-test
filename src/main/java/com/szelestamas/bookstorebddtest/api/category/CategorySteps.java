@@ -22,8 +22,8 @@ public class CategorySteps {
     private final RunContext runContext;
     private final CategoryApiManagementClient apiManagementClient;
 
-    @Then("User can read the following categories:")
-    public void userReceivesTheCategories(List<String> expectedCategories) {
+    @Then("{word} can read the following categories:")
+    public void userReceivesTheCategories(String personaName, List<String> expectedCategories) {
         ResponseEntity<List<CategoryResource>> response = apiManagementClient.getCategories();
         assertEquals(200, response.getStatusCode().value());
         assertThat(expectedCategories, containsInAnyOrder(response.getBody()
@@ -40,52 +40,52 @@ public class CategorySteps {
 
     }
 
-    @When("User adds the category {string}")
-    public void userAddsCategory(String name) {
+    @When("{word} adds the category {string}")
+    public void userAddsCategory(String personaName, String name) {
         CategoryDto category = new CategoryDto(runContext.identifierWithRunId(name));
-        ResponseEntity<CategoryResource> response =  apiManagementClient.createCategory(category);
-        runContext.addCreatedResource(name, response.getBody());
+        ResponseEntity<CategoryResource> response =  apiManagementClient.createCategory(category, personaName);
         assertEquals(201, response.getStatusCode().value());
+        runContext.addCreatedResource(name, response.getBody());
         assertEquals(name, runContext.identifierWithoutRunId(response.getBody().name()));
         assertTrue(response.getHeaders().containsKey("Location"));
         String location = apiManagementClient.getApplicationUrl() + "/categories/" + response.getBody().id();
         assertEquals(location, response.getHeaders().getLocation().toString());
     }
 
-    @And("User can read the previously created category {string}")
-    public void userCanReadThePreviouslyCreatedCategory(String name) {
+    @And("{word} can read the previously created category {string}")
+    public void userCanReadThePreviouslyCreatedCategory(String personaName, String name) {
         CategoryResource expectedCategory = runContext.createdResource(CategoryResource.class, name);
         ResponseEntity<CategoryResource> response = apiManagementClient.getCategory(expectedCategory.id());
         assertEquals(200, response.getStatusCode().value());
         assertEquals(name, runContext.identifierWithoutRunId(response.getBody().name()));
     }
 
-    @When("User cannot create the category {string}")
-    public void userCannotCreateTheCategory(String name) {
+    @When("{word} cannot create the category {string}")
+    public void userCannotCreateTheCategory(String personaName, String name) {
         CategoryDto category = new CategoryDto(runContext.identifierWithRunId(name));
-        ResponseEntity<CategoryResource> response =  apiManagementClient.createCategory(category);
+        ResponseEntity<CategoryResource> response =  apiManagementClient.createCategory(category, personaName);
         assertEquals(409, response.getStatusCode().value());
     }
 
-    @When("User deletes the created category {string}")
-    public void userDeleteCategory(String name) {
+    @When("{word} deletes the created category {string}")
+    public void userDeleteCategory(String personaName, String name) {
         CategoryResource categoryResource = runContext.createdResource(CategoryResource.class, name);
-        ResponseEntity<Void> response = apiManagementClient.deleteCategory(categoryResource.id());
+        ResponseEntity<Void> response = apiManagementClient.deleteCategory(categoryResource.id(), personaName);
         runContext.removeCreatedResource(name, CategoryResource.class);
         assertEquals(204, response.getStatusCode().value());
     }
 
-    @Then("User cannot delete the category {string}")
-    public void userCannotDeleteTheCategory(String name) {
+    @Then("{word} cannot delete the category {string}")
+    public void userCannotDeleteTheCategory(String personaName, String name) {
         CategoryResource categoryResource = runContext.createdResource(CategoryResource.class, name);
-        ResponseEntity<Void> response = apiManagementClient.deleteCategory(categoryResource.id());
+        ResponseEntity<Void> response = apiManagementClient.deleteCategory(categoryResource.id(), personaName);
         assertEquals(409, response.getStatusCode().value());
     }
 
-    @When("User deletes all books in the category {string}")
-    public void userDeletesAllBooksInTheCategory(String name) {
+    @When("{word} deletes all books in the category {string}")
+    public void userDeletesAllBooksInTheCategory(String personaName, String name) {
         CategoryResource categoryResource = runContext.createdResource(CategoryResource.class, name);
-        ResponseEntity<Map<String, Object>> response = apiManagementClient.deleteBooksByCategory(categoryResource.id());
+        ResponseEntity<Map<String, Object>> response = apiManagementClient.deleteBooksByCategory(categoryResource.id(), personaName);
         assertEquals(204, response.getStatusCode().value());
     }
 
@@ -95,5 +95,33 @@ public class CategorySteps {
         ResponseEntity<List<BookResource>> response = apiManagementClient.getBooksByCategory(categoryResource.id());
         assertEquals(200, response.getStatusCode().value());
         assertTrue(response.getBody().isEmpty());
+    }
+
+    @Then("{word} doesn't have the rights to add the category {string}")
+    public void userDoesntHaveTheRightsToAddTheCategory(String personaName, String name) {
+        CategoryDto category = new CategoryDto(runContext.identifierWithRunId(name));
+        ResponseEntity<CategoryResource> response = apiManagementClient.createCategory(category, personaName);
+        assertEquals(403, response.getStatusCode().value());
+    }
+
+    @Then("{word} doesn't have the rights to delete the category {string}")
+    public void userDoesntHaveTheRightsToDeleteTheCategory(String personaName, String name) {
+        CategoryResource categoryResource = runContext.createdResource(CategoryResource.class, name);
+        ResponseEntity<Void> response = apiManagementClient.deleteCategory(categoryResource.id(), personaName);
+        assertEquals(403, response.getStatusCode().value());
+    }
+
+    @When("{word} cannot add the category {string}")
+    public void userCannotAddTheCategory(String personaName, String name) {
+        CategoryDto category = new CategoryDto(runContext.identifierWithRunId(name));
+        ResponseEntity<CategoryResource> response = apiManagementClient.createCategory(category, "");
+        assertEquals(401, response.getStatusCode().value());
+    }
+
+    @Then("{word} is not able to delete the category {string}")
+    public void userIsNotAbleToDeleteTheCategory(String personaName, String name) {
+        CategoryResource categoryResource = runContext.createdResource(CategoryResource.class, name);
+        ResponseEntity<Void> response = apiManagementClient.deleteCategory(categoryResource.id(), "");
+        assertEquals(401, response.getStatusCode().value());
     }
 }

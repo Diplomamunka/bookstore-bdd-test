@@ -1,10 +1,10 @@
 package com.szelestamas.bookstorebddtest.core.persona;
 
-import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 
-@Data
+@Getter
+@Setter
 public class Persona {
     private String email;
     private String name;
