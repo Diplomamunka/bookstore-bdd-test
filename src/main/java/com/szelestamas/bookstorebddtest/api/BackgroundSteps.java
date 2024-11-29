@@ -9,6 +9,7 @@ import com.szelestamas.bookstorebddtest.api.book.BookResource;
 import com.szelestamas.bookstorebddtest.api.category.CategoryApiManagementClient;
 import com.szelestamas.bookstorebddtest.api.category.CategoryResource;
 import com.szelestamas.bookstorebddtest.core.RunContext;
+import io.cucumber.java.After;
 import io.cucumber.java.en.Given;
 import lombok.RequiredArgsConstructor;
 
@@ -22,6 +23,7 @@ public class BackgroundSteps {
     private final BookApiManagementClient bookApiManagementClient;
     private final AuthApiManagementClient authApiManagementClient;
 
+    @After
     @Given("User data is deleted")
     public void contextIsDeleted() {
         List<BookResource> books = bookApiManagementClient.getBooks().getBody();

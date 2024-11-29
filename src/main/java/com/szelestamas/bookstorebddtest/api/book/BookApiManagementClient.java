@@ -1,18 +1,18 @@
 package com.szelestamas.bookstorebddtest.api.book;
 
 import com.szelestamas.bookstorebddtest.api.ApiManagementClient;
-import com.szelestamas.bookstorebddtest.api.ApiServiceProperties;
 import com.szelestamas.bookstorebddtest.core.authorization.AuthorizationProvider;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
-import org.springframework.http.*;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.web.client.RestClient;
 
 import java.nio.file.Path;
 import java.util.List;
@@ -22,50 +22,56 @@ public class BookApiManagementClient extends ApiManagementClient {
     @Value("${file-location}")
     String filesPath;
 
-    BookApiManagementClient(RestTemplate restTemplate, ApiServiceProperties apiServiceProperties,
+    BookApiManagementClient(RestClient restClient, String baseUrl,
                             AuthorizationProvider authorizationProvider) {
-        super(restTemplate, apiServiceProperties, authorizationProvider);
+        super(baseUrl, restClient, authorizationProvider);
     }
 
     public ResponseEntity<BookResource> getBook(long id) {
-        return restTemplate.exchange(apiServiceProperties.toApplicationUrl("/books/" + id), HttpMethod.GET, null, BookResource.class);
+        return restClient.get().uri("/books/{id}", id).retrieve().toEntity(BookResource.class);
     }
 
     public ResponseEntity<List<BookResource>> getBooks() {
-        return restTemplate.exchange(apiServiceProperties.toApplicationUrl("/books"), HttpMethod.GET, null, new ParameterizedTypeReference<>() {});
+        return restClient.get().uri("/books").retrieve().toEntity(new ParameterizedTypeReference<>() {});
     }
 
     public ResponseEntity<BookResource> updateBook(long id, BookDto book, String personaName) {
+        var baseRequest = restClient.put().uri("/books/{id}", id).body(book);
         try {
             if (personaName.isEmpty())
-                return restTemplate.exchange(apiServiceProperties.toApplicationUrl("/books/" + id), HttpMethod.PUT, new HttpEntity<>(book), BookResource.class);
-            HttpHeaders headers = new HttpHeaders();
-            headers.setBasicAuth(authorizationProvider.authorizationForPersona(personaName));
-            return restTemplate.exchange(apiServiceProperties.toApplicationUrl("/books/" + id), HttpMethod.PUT, new HttpEntity<>(book, headers), BookResource.class);
+                return baseRequest.retrieve().toEntity(BookResource.class);
+            else
+                return baseRequest
+                        .headers(httpHeaders -> httpHeaders.setBasicAuth(authorizationProvider.authorizationForPersona(personaName)))
+                        .retrieve().toEntity(BookResource.class);
         } catch (HttpClientErrorException e) {
             return ResponseEntity.status(e.getStatusCode()).build();
         }
     }
 
     public ResponseEntity<Void> deleteBook(long id, String personaName) {
+        var baseRequest = restClient.delete().uri("/books/{id}", id);
         try {
             if (personaName.isEmpty())
-                return restTemplate.exchange(apiServiceProperties.toApplicationUrl("/books/" + id), HttpMethod.DELETE, null, Void.class);
-            HttpHeaders headers = new HttpHeaders();
-            headers.setBasicAuth(authorizationProvider.authorizationForPersona(personaName));
-            return restTemplate.exchange(apiServiceProperties.toApplicationUrl("/books/" + id), HttpMethod.DELETE, new HttpEntity<>(headers), Void.class);
+                return baseRequest.retrieve().toBodilessEntity();
+            else
+                return baseRequest
+                        .headers(httpHeaders -> httpHeaders.setBasicAuth(authorizationProvider.authorizationForPersona(personaName)))
+                        .retrieve().toBodilessEntity();
         } catch (HttpClientErrorException e) {
             return ResponseEntity.status(e.getStatusCode()).build();
         }
     }
 
     public ResponseEntity<BookResource> createBook(BookDto book, String personaName) {
+        var baseRequest = restClient.post().uri("/books").body(book);
         try {
             if (personaName.isEmpty())
-                return restTemplate.exchange(apiServiceProperties.toApplicationUrl("/books"), HttpMethod.POST, new HttpEntity<>(book), BookResource.class);
-            HttpHeaders headers = new HttpHeaders();
-            headers.setBasicAuth(authorizationProvider.authorizationForPersona(personaName));
-            return restTemplate.exchange(apiServiceProperties.toApplicationUrl("/books"), HttpMethod.POST, new HttpEntity<>(book, headers), BookResource.class);
+                return baseRequest.retrieve().toEntity(BookResource.class);
+            else
+                return baseRequest
+                        .headers(httpHeaders -> httpHeaders.setBasicAuth(authorizationProvider.authorizationForPersona(personaName)))
+                        .retrieve().toEntity(BookResource.class);
         } catch (HttpClientErrorException e) {
             return ResponseEntity.status(e.getStatusCode()).build();
         }
@@ -74,45 +80,48 @@ public class BookApiManagementClient extends ApiManagementClient {
     public ResponseEntity<String> uploadImage(long id, Path file, String personaName) {
         MultiValueMap<String, Object> files = new LinkedMultiValueMap<>();
         files.add("image", new FileSystemResource(file));
-        HttpHeaders httpHeaders = new HttpHeaders();
-        httpHeaders.setContentType(MediaType.MULTIPART_FORM_DATA);
+        var baseRequest = restClient.post().uri("/books/{id}/image", id).body(files).headers(httpHeaders -> httpHeaders.setContentType(MediaType.MULTIPART_FORM_DATA));
         try {
             if (personaName.isEmpty())
-                return restTemplate.exchange(apiServiceProperties.toApplicationUrl("/books/" + id + "/image"), HttpMethod.POST, new HttpEntity<>(files, httpHeaders), String.class);
-            httpHeaders.setBasicAuth(authorizationProvider.authorizationForPersona(personaName));
-            return restTemplate.exchange(apiServiceProperties.toApplicationUrl("/books/" + id + "/image"), HttpMethod.POST, new HttpEntity<>(files, httpHeaders), String.class);
+                return baseRequest.retrieve().toEntity(String.class);
+            else
+                return baseRequest
+                        .headers(httpHeaders -> httpHeaders.setBasicAuth(authorizationProvider.authorizationForPersona(personaName)))
+                        .retrieve().toEntity(String.class);
         } catch (HttpClientErrorException e) {
             return ResponseEntity.status(e.getStatusCode()).build();
         }
     }
 
     public ResponseEntity<Resource> downloadImage(long id) {
-        return restTemplate.exchange(apiServiceProperties.toApplicationUrl("/books/" + id + "/image"), HttpMethod.GET, null, Resource.class);
+        return restClient.get().uri("/books/{id}/image", id).retrieve().toEntity(Resource.class);
     }
 
     public ResponseEntity<List<BookResource>> addToBookmark(long id, String personaName) {
+        var baseRequest = restClient.post().uri("/books/{id}/bookmark", id);
         if (personaName.isEmpty()) {
             try {
-                return restTemplate.exchange(apiServiceProperties.toApplicationUrl("/books/" + id + "/bookmark"), HttpMethod.POST, null, new ParameterizedTypeReference<>() {});
+                return baseRequest.retrieve().toEntity(new ParameterizedTypeReference<>() {});
             } catch (HttpClientErrorException e) {
                 return ResponseEntity.status(e.getStatusCode()).build();
             }
         }
-        HttpHeaders headers = new HttpHeaders();
-        headers.setBasicAuth(authorizationProvider.authorizationForPersona(personaName));
-        return restTemplate.exchange(apiServiceProperties.toApplicationUrl("/books/" + id + "/bookmark"), HttpMethod.POST, new HttpEntity<>(headers), new ParameterizedTypeReference<>() {});
+        return baseRequest
+                .headers(httpHeaders -> httpHeaders.setBasicAuth(authorizationProvider.authorizationForPersona(personaName)))
+                .retrieve().toEntity(new ParameterizedTypeReference<>() {});
     }
 
     public ResponseEntity<Void> deleteBookmark(long id, String personaName) {
+        var baseRequest = restClient.delete().uri("/books/{id}/bookmark", id);
         if (personaName.isEmpty()) {
             try {
-                return restTemplate.exchange(apiServiceProperties.toApplicationUrl("/books/" + id + "/bookmark"), HttpMethod.DELETE, null, Void.class);
+                return baseRequest.retrieve().toBodilessEntity();
             } catch (HttpClientErrorException e) {
                 return ResponseEntity.status(e.getStatusCode()).build();
             }
         }
-        HttpHeaders headers = new HttpHeaders();
-        headers.setBasicAuth(authorizationProvider.authorizationForPersona(personaName));
-        return restTemplate.exchange(apiServiceProperties.toApplicationUrl("/books/" + id + "/bookmark"), HttpMethod.DELETE, new HttpEntity<>(headers), Void.class);
+        return baseRequest
+                .headers(httpHeaders -> httpHeaders.setBasicAuth(authorizationProvider.authorizationForPersona(personaName)))
+                .retrieve().toBodilessEntity();
     }
 }

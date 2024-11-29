@@ -25,6 +25,7 @@ public class BookResource {
     private List<AuthorResource> authors;
     private boolean available;
     private LocalDate releaseDate;
+    private List<String> tags;
 
     @Override
     public boolean equals(Object o) {

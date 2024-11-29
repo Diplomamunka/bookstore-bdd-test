@@ -26,7 +26,7 @@ public class AuthorSteps {
         assertEquals(201, response.getStatusCode().value());
         assertEquals(name, runContext.identifierWithoutRunId(response.getBody().fullName()));
         assertTrue(response.getHeaders().containsKey("Location"));
-        String location = apiManagementClient.getApplicationUrl() + "/authors/" + response.getBody().id();
+        String location = apiManagementClient.getBaseUrl() + "/authors/" + response.getBody().id();
         assertEquals(location, response.getHeaders().getLocation().toString());
         runContext.addCreatedResource(name, response.getBody());
     }
@@ -111,7 +111,7 @@ public class AuthorSteps {
     @When("{word} deletes all books from the author {string}")
     public void userDeletesAllBooksFromTheAuthor(String personaName, String name) {
         AuthorResource author = runContext.createdResource(AuthorResource.class, name);
-        ResponseEntity<Map<String, Object>> response = apiManagementClient.deleteBooksByAuthor(author.id(), personaName);
+        ResponseEntity<Void> response = apiManagementClient.deleteBooksByAuthor(author.id(), personaName);
         assertEquals(204, response.getStatusCode().value());
     }
 

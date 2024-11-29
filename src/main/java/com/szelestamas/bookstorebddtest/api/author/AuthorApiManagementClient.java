@@ -1,79 +1,80 @@
 package com.szelestamas.bookstorebddtest.api.author;
 
 import com.szelestamas.bookstorebddtest.api.ApiManagementClient;
-import com.szelestamas.bookstorebddtest.api.ApiServiceProperties;
 import com.szelestamas.bookstorebddtest.api.book.BookResource;
 import com.szelestamas.bookstorebddtest.core.authorization.AuthorizationProvider;
 import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.web.client.RestClient;
 
 import java.util.List;
-import java.util.Map;
 
 @Component
 public class AuthorApiManagementClient extends ApiManagementClient {
-    AuthorApiManagementClient(ApiServiceProperties apiServiceProperties, RestTemplate restTemplate,
+    AuthorApiManagementClient(String baseUrl, RestClient restClient,
                               AuthorizationProvider authorizationProvider) {
-        super(restTemplate, apiServiceProperties, authorizationProvider);
+        super(baseUrl, restClient, authorizationProvider);
     }
 
     public ResponseEntity<AuthorResource> createAuthor(AuthorDto author, String personaName) {
+        var baseRequest = restClient.post().uri("/authors").body(author);
         try {
             if (personaName.isEmpty())
-                return restTemplate.exchange(apiServiceProperties.toApplicationUrl("/authors"), HttpMethod.POST, new HttpEntity<>(author), AuthorResource.class);
-            HttpHeaders headers = new HttpHeaders();
-            headers.setBasicAuth(authorizationProvider.authorizationForPersona(personaName));
-            return restTemplate.exchange(apiServiceProperties.toApplicationUrl("/authors"), HttpMethod.POST, new HttpEntity<>(author, headers), AuthorResource.class);
+                return baseRequest.retrieve().toEntity(AuthorResource.class);
+            else
+                return baseRequest
+                        .headers(httpHeaders -> httpHeaders.setBasicAuth(authorizationProvider.authorizationForPersona(personaName)))
+                        .retrieve().toEntity(AuthorResource.class);
         } catch (HttpClientErrorException e) {
             return ResponseEntity.status(e.getStatusCode()).build();
         }
     }
 
     public ResponseEntity<List<AuthorResource>> getAuthors() {
-        return restTemplate.exchange(apiServiceProperties.toApplicationUrl("/authors"), HttpMethod.GET, null, new ParameterizedTypeReference<>() {});
+        return restClient.get().uri("/authors").retrieve().toEntity(new ParameterizedTypeReference<>() {});
     }
 
     public ResponseEntity<Void> deleteAuthor(long id, String personaName) {
+        var baseRequest = restClient.delete().uri("/authors/{id}", id);
         try {
             if (personaName.isEmpty())
-                return restTemplate.exchange(apiServiceProperties.toApplicationUrl("/authors/" + id), HttpMethod.DELETE, null, Void.class);
-            HttpHeaders headers = new HttpHeaders();
-            headers.setBasicAuth(authorizationProvider.authorizationForPersona(personaName));
-            return restTemplate.exchange(apiServiceProperties.toApplicationUrl("/authors/" + id), HttpMethod.DELETE, new HttpEntity<>(headers), Void.class);
+                return baseRequest.retrieve().toBodilessEntity();
+            else
+                return baseRequest
+                        .headers(httpHeaders -> httpHeaders.setBasicAuth(authorizationProvider.authorizationForPersona(personaName)))
+                        .retrieve().toBodilessEntity();
         } catch (HttpClientErrorException e) {
             return ResponseEntity.status(e.getStatusCode()).build();
         }
     }
 
     public ResponseEntity<AuthorResource> getAuthor(long id) {
-        return restTemplate.exchange(apiServiceProperties.toApplicationUrl("/authors/" + id), HttpMethod.GET, null, AuthorResource.class);
+        return restClient.get().uri("/authors/{id}", id).retrieve().toEntity(AuthorResource.class);
     }
 
     public ResponseEntity<AuthorResource> updateAuthor(long id, AuthorDto author, String personaName) {
+        var baseRequest = restClient.put().uri("/authors/{id}", id).body(author);
         try {
             if (personaName.isEmpty())
-                return restTemplate.exchange(apiServiceProperties.toApplicationUrl("/authors/" + id), HttpMethod.PUT, new HttpEntity<>(author), AuthorResource.class);
-            HttpHeaders headers = new HttpHeaders();
-            headers.setBasicAuth(authorizationProvider.authorizationForPersona(personaName));
-            return restTemplate.exchange(apiServiceProperties.toApplicationUrl("/authors/" + id), HttpMethod.PUT, new HttpEntity<>(author, headers), AuthorResource.class);
+                return baseRequest.retrieve().toEntity(AuthorResource.class);
+            else
+                return baseRequest
+                        .headers(httpHeaders -> httpHeaders.setBasicAuth(authorizationProvider.authorizationForPersona(personaName)))
+                        .retrieve().toEntity(AuthorResource.class);
         } catch (HttpClientErrorException e) {
             return ResponseEntity.status(e.getStatusCode()).build();
         }
     }
 
     public ResponseEntity<List<BookResource>> getBooksByAuthor(long id) {
-        return restTemplate.exchange(apiServiceProperties.toApplicationUrl("/authors/" + id + "/books"), HttpMethod.GET, null, new ParameterizedTypeReference<>() {});
+        return restClient.get().uri("/authors/{id}/books", id).retrieve().toEntity(new ParameterizedTypeReference<>() {});
     }
 
-    public ResponseEntity<Map<String, Object>> deleteBooksByAuthor(long id, String personaName) {
-        HttpHeaders headers = new HttpHeaders();
-        headers.setBasicAuth(authorizationProvider.authorizationForPersona(personaName));
-        return restTemplate.exchange(apiServiceProperties.toApplicationUrl("/authors/" + id + "/books"), HttpMethod.DELETE, new HttpEntity<>(headers), new ParameterizedTypeReference<>() {});
+    public ResponseEntity<Void> deleteBooksByAuthor(long id, String personaName) {
+        return restClient.delete().uri("/authors/{id}/books", id)
+                .headers(httpHeaders -> httpHeaders.setBasicAuth(authorizationProvider.authorizationForPersona(personaName)))
+                .retrieve().toBodilessEntity();
     }
 }

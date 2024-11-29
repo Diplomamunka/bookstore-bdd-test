@@ -9,8 +9,8 @@ public class BookstoreBddTestApplication {
                 "classpath:featuretest",
                 "--glue", "com.szelestamas.bookstorebddtest",
                 "--plugin",  "pretty",
-                "--plugin", "html:build/reports/cucumber.html",
-                "--plugin", "json:build/reports/cucumber.json",
+                "--plugin", "html:reports/cucumber.html",
+                "--plugin", "json:reports/cucumber.json",
                 "--snippets", "camelcase",
         }, args));
     }

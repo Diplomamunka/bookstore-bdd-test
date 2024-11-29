@@ -1,4 +1,6 @@
 package com.szelestamas.bookstorebddtest.api.auth;
 
-public record UserDto(String login, String password, String firstName, String lastName, String role) {
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+public record UserDto(@JsonProperty("email") String login, String password, String firstName, String lastName, String role) {
 }

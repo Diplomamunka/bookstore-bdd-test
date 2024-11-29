@@ -69,6 +69,35 @@ Feature: Category testing
       | juvenile   |
       | folktale   |
 
+  Scenario: Adam updates the added category's name
+    Given Mike adds the category 'fokltale'
+    When Adam updates the previously added category's name from 'fokltale' to 'folktale'
+    Then Anyone can read the previously modified category 'folktale'
+
+  Scenario: Mike updates the added category's name
+    Given Adam adds the category 'fokltale'
+    When Mike updates the previously added category's name from 'fokltale' to 'folktale'
+    Then Anyone can read the previously modified category 'folktale'
+
+  Scenario: Customers don't have the right to update a category's name
+    Given Sue sign up and creates a password
+    Given Adam adds the category 'fokltale'
+    Then Sue doesn't have the rights to update the previously added category's name from 'fokltale' to 'folktale'
+
+  Scenario: Users without sign in cannot update a category's name
+    Given Adam adds the category 'fokltale'
+    Then Anyone is not able to update the previously added category's name from 'fokltale' to 'folktale'
+
+  Scenario: Adam cannot update a category's name to an existing one
+    Given Adam adds the category 'folktale'
+    Given Mike adds the category 'fokltale'
+    Then Adam cannot update the category from 'fokltale' to 'folktale'
+
+  Scenario: Mike cannot update a category's name to an existing one
+    Given Adam adds the category 'folktale'
+    Given Mike adds the category 'fokltale'
+    Then Mike cannot update the category from 'fokltale' to 'folktale'
+
   Scenario: Adam deletes a category if not having any book
     Given Mike adds the category 'folktale'
     When Adam deletes the created category 'folktale'

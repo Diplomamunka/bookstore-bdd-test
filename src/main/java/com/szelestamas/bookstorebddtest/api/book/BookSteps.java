@@ -41,7 +41,7 @@ public class BookSteps {
         });
         assertEquals(201, response.getStatusCode().value());
         assertTrue(response.getHeaders().containsKey("Location"));
-        String location = apiManagementClient.getApplicationUrl() + "/books/" + response.getBody().getId();
+        String location = apiManagementClient.getBaseUrl() + "/books/" + response.getBody().getId();
         assertEquals(location, response.getHeaders().getLocation().toString());
         assertEquals(book.getTitle(), response.getBody().getTitle());
         assertEquals(book.getDiscount(), response.getBody().getDiscount());
