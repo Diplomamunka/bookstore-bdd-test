@@ -8,7 +8,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 
 import java.util.List;
-import java.util.Map;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -31,6 +30,14 @@ public class AuthorSteps {
         runContext.addCreatedResource(name, response.getBody());
     }
 
+    @Then("{word} can read the previously recorded author {string}")
+    public void userCanReadThePreviouslyRecordedAuthor(String personaName, String name) {
+        AuthorResource expectedAuthor = runContext.createdResource(AuthorResource.class, name);
+        ResponseEntity<AuthorResource> response = apiManagementClient.getAuthor(expectedAuthor.id());
+        assertEquals(200, response.getStatusCode().value());
+        assertEquals(name, runContext.identifierWithoutRunId(response.getBody().fullName()));
+    }
+
     @Then("{word} can read the following authors:")
     public void userReceivesAuthors(String personaName, List<String> names) {
         ResponseEntity<List<AuthorResource>> response = apiManagementClient.getAuthors();
@@ -41,14 +48,6 @@ public class AuthorSteps {
         });
         assertFalse(runContext.getResourceMap(AuthorResource.class).isEmpty());
         assertThat(names, containsInAnyOrder(runContext.getResourceMap(AuthorResource.class).keySet().toArray()));
-    }
-
-    @Then("{word} can read the previously recorded author {string}")
-    public void userCanReadThePreviouslyRecordedAuthor(String personaName, String name) {
-        AuthorResource expectedAuthor = runContext.createdResource(AuthorResource.class, name);
-        ResponseEntity<AuthorResource> response = apiManagementClient.getAuthor(expectedAuthor.id());
-        assertEquals(200, response.getStatusCode().value());
-        assertEquals(name, runContext.identifierWithoutRunId(response.getBody().fullName()));
     }
 
     @Then("{word} cannot record the author {string}")
