@@ -26,6 +26,10 @@ public class CategoryApiManagementClient extends ApiManagementClient {
         return restClient.get().uri("/categories/{id}", id).retrieve().toEntity(CategoryResource.class);
     }
 
+    public ResponseEntity<List<BookResource>> getBooksByCategory(long id) {
+        return restClient.get().uri("/categories/{id}/books", id).retrieve().toEntity(new ParameterizedTypeReference<>() {});
+    }
+
     public ResponseEntity<CategoryResource> createCategory(CategoryDto category, String personaName) {
         var baseRequest = restClient.post().uri("/categories").body(category);
         try {
@@ -66,10 +70,6 @@ public class CategoryApiManagementClient extends ApiManagementClient {
         } catch (HttpClientErrorException e) {
             return ResponseEntity.status(e.getStatusCode()).build();
         }
-    }
-
-    public ResponseEntity<List<BookResource>> getBooksByCategory(long id) {
-        return restClient.get().uri("/categories/{id}/books", id).retrieve().toEntity(new ParameterizedTypeReference<>() {});
     }
 
     public ResponseEntity<Void> deleteBooksByCategory(long id, String personaName) {

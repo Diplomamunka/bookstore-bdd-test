@@ -42,6 +42,31 @@ public class AuthApiManagementClient extends ApiManagementClient {
         }
     }
 
+    public ResponseEntity<UserResource> getProfile(String personaName) {
+        try {
+            return restClient.get().uri("/profile")
+                    .headers(httpHeaders -> httpHeaders.setBasicAuth(authorizationProvider.authorizationForPersona(personaName)))
+                    .retrieve().toEntity(UserResource.class);
+        } catch (HttpClientErrorException e) {
+            return ResponseEntity.status(e.getStatusCode()).build();
+        }
+    }
+
+    public ResponseEntity<List<BookResource>> getAllBookmarks(String personaName) {
+        var baseRequest = restClient.get().uri("/profile/bookmarks");
+        if (personaName.isEmpty()) {
+            try {
+                return baseRequest.retrieve().toEntity(new ParameterizedTypeReference<>() {});
+            } catch (HttpClientErrorException e) {
+                return ResponseEntity.status(e.getStatusCode()).build();
+            }
+        }
+        else
+            return baseRequest
+                    .headers(httpHeaders -> httpHeaders.setBasicAuth(authorizationProvider.authorizationForPersona(personaName)))
+                    .retrieve().toEntity(new ParameterizedTypeReference<>() {});
+    }
+
     public ResponseEntity<UserResource> updateUser(UserDto user, String personaName) {
         var baseRequest = restClient.put().uri("/users/{login}", user.login()).body(user);
         try {
@@ -51,16 +76,6 @@ public class AuthApiManagementClient extends ApiManagementClient {
                 return baseRequest
                         .headers(httpHeaders -> httpHeaders.setBasicAuth(authorizationProvider.authorizationForPersona(personaName)))
                         .retrieve().toEntity(UserResource.class);
-        } catch (HttpClientErrorException e) {
-            return ResponseEntity.status(e.getStatusCode()).build();
-        }
-    }
-
-    public ResponseEntity<UserResource> getProfile(String personaName) {
-        try {
-            return restClient.get().uri("/profile")
-                    .headers(httpHeaders -> httpHeaders.setBasicAuth(authorizationProvider.authorizationForPersona(personaName)))
-                    .retrieve().toEntity(UserResource.class);
         } catch (HttpClientErrorException e) {
             return ResponseEntity.status(e.getStatusCode()).build();
         }
@@ -84,20 +99,5 @@ public class AuthApiManagementClient extends ApiManagementClient {
         } catch (HttpClientErrorException e) {
             return ResponseEntity.status(e.getStatusCode()).build();
         }
-    }
-
-    public ResponseEntity<List<BookResource>> getAllBookmarks(String personaName) {
-        var baseRequest = restClient.get().uri("/profile/bookmarks");
-        if (personaName.isEmpty()) {
-            try {
-                return baseRequest.retrieve().toEntity(new ParameterizedTypeReference<>() {});
-            } catch (HttpClientErrorException e) {
-                return ResponseEntity.status(e.getStatusCode()).build();
-            }
-        }
-        else
-            return baseRequest
-                    .headers(httpHeaders -> httpHeaders.setBasicAuth(authorizationProvider.authorizationForPersona(personaName)))
-                    .retrieve().toEntity(new ParameterizedTypeReference<>() {});
     }
 }

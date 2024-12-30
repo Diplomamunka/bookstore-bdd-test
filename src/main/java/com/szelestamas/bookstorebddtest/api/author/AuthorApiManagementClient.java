@@ -18,6 +18,18 @@ public class AuthorApiManagementClient extends ApiManagementClient {
         super(baseUrl, restClient, authorizationProvider);
     }
 
+    public ResponseEntity<AuthorResource> getAuthor(long id) {
+        return restClient.get().uri("/authors/{id}", id).retrieve().toEntity(AuthorResource.class);
+    }
+
+    public ResponseEntity<List<AuthorResource>> getAuthors() {
+        return restClient.get().uri("/authors").retrieve().toEntity(new ParameterizedTypeReference<>() {});
+    }
+
+    public ResponseEntity<List<BookResource>> getBooksByAuthor(long id) {
+        return restClient.get().uri("/authors/{id}/books", id).retrieve().toEntity(new ParameterizedTypeReference<>() {});
+    }
+
     public ResponseEntity<AuthorResource> createAuthor(AuthorDto author, String personaName) {
         var baseRequest = restClient.post().uri("/authors").body(author);
         try {
@@ -30,28 +42,6 @@ public class AuthorApiManagementClient extends ApiManagementClient {
         } catch (HttpClientErrorException e) {
             return ResponseEntity.status(e.getStatusCode()).build();
         }
-    }
-
-    public ResponseEntity<List<AuthorResource>> getAuthors() {
-        return restClient.get().uri("/authors").retrieve().toEntity(new ParameterizedTypeReference<>() {});
-    }
-
-    public ResponseEntity<Void> deleteAuthor(long id, String personaName) {
-        var baseRequest = restClient.delete().uri("/authors/{id}", id);
-        try {
-            if (personaName.isEmpty())
-                return baseRequest.retrieve().toBodilessEntity();
-            else
-                return baseRequest
-                        .headers(httpHeaders -> httpHeaders.setBasicAuth(authorizationProvider.authorizationForPersona(personaName)))
-                        .retrieve().toBodilessEntity();
-        } catch (HttpClientErrorException e) {
-            return ResponseEntity.status(e.getStatusCode()).build();
-        }
-    }
-
-    public ResponseEntity<AuthorResource> getAuthor(long id) {
-        return restClient.get().uri("/authors/{id}", id).retrieve().toEntity(AuthorResource.class);
     }
 
     public ResponseEntity<AuthorResource> updateAuthor(long id, AuthorDto author, String personaName) {
@@ -68,8 +58,18 @@ public class AuthorApiManagementClient extends ApiManagementClient {
         }
     }
 
-    public ResponseEntity<List<BookResource>> getBooksByAuthor(long id) {
-        return restClient.get().uri("/authors/{id}/books", id).retrieve().toEntity(new ParameterizedTypeReference<>() {});
+    public ResponseEntity<Void> deleteAuthor(long id, String personaName) {
+        var baseRequest = restClient.delete().uri("/authors/{id}", id);
+        try {
+            if (personaName.isEmpty())
+                return baseRequest.retrieve().toBodilessEntity();
+            else
+                return baseRequest
+                        .headers(httpHeaders -> httpHeaders.setBasicAuth(authorizationProvider.authorizationForPersona(personaName)))
+                        .retrieve().toBodilessEntity();
+        } catch (HttpClientErrorException e) {
+            return ResponseEntity.status(e.getStatusCode()).build();
+        }
     }
 
     public ResponseEntity<Void> deleteBooksByAuthor(long id, String personaName) {

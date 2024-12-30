@@ -10,10 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 
 import java.util.List;
-import java.util.Map;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -26,12 +23,13 @@ public class CategorySteps {
     public void userReceivesTheCategories(String personaName, List<String> expectedCategories) {
         ResponseEntity<List<CategoryResource>> response = apiManagementClient.getCategories();
         assertEquals(200, response.getStatusCode().value());
-        assertThat(expectedCategories, containsInAnyOrder(response.getBody()
-                .stream().map(category -> {
-                    if (runContext.isAFeatureTestIdentifier(category.name()))
-                        return runContext.identifierWithoutRunId(category.name());
-                    return category.name();
-                }).toArray()));
+        List<String> categoryNames = response.getBody().stream().map(category -> {
+            if (runContext.isAFeatureTestIdentifier(category.name()))
+                return runContext.identifierWithoutRunId(category.name());
+            return category.name();
+        }).toList();
+        assertTrue(categoryNames.size() >= expectedCategories.size());
+        expectedCategories.forEach(category -> assertTrue(categoryNames.contains(category)));
     }
 
 

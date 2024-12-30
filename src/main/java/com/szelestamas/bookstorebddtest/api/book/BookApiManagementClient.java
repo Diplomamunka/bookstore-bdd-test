@@ -35,6 +35,20 @@ public class BookApiManagementClient extends ApiManagementClient {
         return restClient.get().uri("/books").retrieve().toEntity(new ParameterizedTypeReference<>() {});
     }
 
+    public ResponseEntity<BookResource> createBook(BookDto book, String personaName) {
+        var baseRequest = restClient.post().uri("/books").body(book);
+        try {
+            if (personaName.isEmpty())
+                return baseRequest.retrieve().toEntity(BookResource.class);
+            else
+                return baseRequest
+                        .headers(httpHeaders -> httpHeaders.setBasicAuth(authorizationProvider.authorizationForPersona(personaName)))
+                        .retrieve().toEntity(BookResource.class);
+        } catch (HttpClientErrorException e) {
+            return ResponseEntity.status(e.getStatusCode()).build();
+        }
+    }
+
     public ResponseEntity<BookResource> updateBook(long id, BookDto book, String personaName) {
         var baseRequest = restClient.put().uri("/books/{id}", id).body(book);
         try {
@@ -58,20 +72,6 @@ public class BookApiManagementClient extends ApiManagementClient {
                 return baseRequest
                         .headers(httpHeaders -> httpHeaders.setBasicAuth(authorizationProvider.authorizationForPersona(personaName)))
                         .retrieve().toBodilessEntity();
-        } catch (HttpClientErrorException e) {
-            return ResponseEntity.status(e.getStatusCode()).build();
-        }
-    }
-
-    public ResponseEntity<BookResource> createBook(BookDto book, String personaName) {
-        var baseRequest = restClient.post().uri("/books").body(book);
-        try {
-            if (personaName.isEmpty())
-                return baseRequest.retrieve().toEntity(BookResource.class);
-            else
-                return baseRequest
-                        .headers(httpHeaders -> httpHeaders.setBasicAuth(authorizationProvider.authorizationForPersona(personaName)))
-                        .retrieve().toEntity(BookResource.class);
         } catch (HttpClientErrorException e) {
             return ResponseEntity.status(e.getStatusCode()).build();
         }
