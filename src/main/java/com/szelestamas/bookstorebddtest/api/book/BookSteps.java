@@ -52,6 +52,7 @@ public class BookSteps {
         assertEquals(book.getReleaseDate(), response.getBody().getReleaseDate());
         assertThat(book.getAuthors().stream().map(AuthorDto::getFullName).toList(),
                 containsInAnyOrder(response.getBody().getAuthors().stream().map(AuthorResource::fullName).toArray()));
+        assertThat(book.getTags(), containsInAnyOrder(response.getBody().getTags().toArray()));
     }
 
     @Then("{word} can read the previously recorded book {string}")
@@ -66,6 +67,9 @@ public class BookSteps {
         assertEquals(expectedBook.getCategory().name(), response.getBody().getCategory().name());
         assertThat(expectedBook.getAuthors().stream().map(AuthorResource::fullName).toList(),
                 containsInAnyOrder(response.getBody().getAuthors().stream().map(AuthorResource::fullName).toArray()));
+        assertEquals(expectedBook.getShortDescription(), response.getBody().getShortDescription());
+        assertEquals(expectedBook.getReleaseDate(), response.getBody().getReleaseDate());
+        assertThat(expectedBook.getTags(), containsInAnyOrder(response.getBody().getTags().toArray()));
     }
 
     @When("{word} uploads an image of the book {string}")
@@ -112,6 +116,7 @@ public class BookSteps {
         updatedBook.setReleaseDate(book.getReleaseDate());
         updatedBook.setAuthors(book.getAuthors().stream().map(author -> new AuthorDto(author.fullName())).toList());
         updatedBook.setShortDescription(description);
+        updatedBook.setTags(book.getTags());
         ResponseEntity<BookResource> response = apiManagementClient.updateBook(book.getId(), updatedBook, personaName);
         runContext.addCreatedResource(title, response.getBody());
         assertEquals(200, response.getStatusCode().value());
@@ -124,6 +129,7 @@ public class BookSteps {
         assertEquals(updatedBook.getShortDescription(), response.getBody().getShortDescription());
         assertThat(updatedBook.getAuthors().stream().map(AuthorDto::getFullName).toList(),
                 containsInAnyOrder(response.getBody().getAuthors().stream().map(AuthorResource::fullName).toArray()));
+        assertThat(updatedBook.getTags(), containsInAnyOrder(response.getBody().getTags().toArray()));
     }
 
     @Then("{word} can read the previously modified book {string}")
@@ -140,6 +146,7 @@ public class BookSteps {
         assertEquals(expectedBook.getCategory().name(), response.getBody().getCategory().name());
         assertThat(expectedBook.getAuthors().stream().map(AuthorResource::fullName).toList(),
                 containsInAnyOrder(response.getBody().getAuthors().stream().map(AuthorResource::fullName).toArray()));
+        assertThat(expectedBook.getTags(), containsInAnyOrder(response.getBody().getTags().toArray()));
     }
 
     @When("{word} changes the category of the book {string} to {string}")
@@ -154,6 +161,8 @@ public class BookSteps {
         updatedBook.setCategory(CategoryDto.parse(category));
         updatedBook.setReleaseDate(book.getReleaseDate());
         updatedBook.setAuthors(book.getAuthors().stream().map(author -> new AuthorDto(author.fullName())).toList());
+        updatedBook.setShortDescription(book.getShortDescription());
+        updatedBook.setTags(book.getTags());
         ResponseEntity<BookResource> response = apiManagementClient.updateBook(book.getId(), updatedBook, personaName);
         runContext.addCreatedResource(title, response.getBody());
         assertEquals(200, response.getStatusCode().value());
@@ -166,6 +175,7 @@ public class BookSteps {
         assertEquals(updatedBook.getShortDescription(), response.getBody().getShortDescription());
         assertThat(updatedBook.getAuthors().stream().map(AuthorDto::getFullName).toList(),
                 containsInAnyOrder(response.getBody().getAuthors().stream().map(AuthorResource::fullName).toArray()));
+        assertThat(updatedBook.getTags(), containsInAnyOrder(response.getBody().getTags().toArray()));
     }
 
     @When("{word} deletes the recorded book {string}")
@@ -262,6 +272,7 @@ public class BookSteps {
         updatedBook.setReleaseDate(book.getReleaseDate());
         updatedBook.setAuthors(book.getAuthors().stream().map(author -> new AuthorDto(author.fullName())).toList());
         updatedBook.setShortDescription(description);
+        updatedBook.setTags(book.getTags());
         ResponseEntity<BookResource> response = apiManagementClient.updateBook(book.getId(), updatedBook, personaName);
         assertEquals(403, response.getStatusCode().value());
     }
@@ -307,6 +318,7 @@ public class BookSteps {
         updatedBook.setReleaseDate(book.getReleaseDate());
         updatedBook.setAuthors(book.getAuthors().stream().map(author -> new AuthorDto(author.fullName())).toList());
         updatedBook.setShortDescription(description);
+        updatedBook.setTags(book.getTags());
         ResponseEntity<BookResource> response = apiManagementClient.updateBook(book.getId(), updatedBook, "");
         assertEquals(401, response.getStatusCode().value());
     }
